@@ -1,0 +1,110 @@
+
+
+###########################################################################################
+# Matrix inversion is usually a costly computation and there may be some benefit to caching 
+# the inverse of a matrix rather than compute it repeatedly . The following two functions 
+# makeCacheMatrix(...) and cacheSolve(...) are used to cache the inverse of a matrix.
+#
+# Function: makeCacheMatrix 
+# Desc:     This function creates a special "matrix" object that can cache its inverse
+# x parameter: a square invertible matrix
+# Return: a list containing functions to
+#              1. set the matrix 
+#              2. get the matrix
+#              3. set the inverse
+#              4. get the inverse
+#         
+
+makeCacheMatrix <- function(x = matrix()) {
+ 
+   m = NULL
+   set = function(y) {
+    x <<- y
+    m <<- NULL
+  }
+  
+  get = function() x
+  setinverse = function(inverse) m <<- inverse 
+  getinverse = function() m
+  list(set=set, get=get, setinverse=setinverse, getinverse=getinverse)
+}
+
+#############################################################################################
+# Function: cacheSolve 
+# Desc:     This function computes the inverse of the special "matrix" returned by makeCacheMatrix
+#           above. If the inverse has already been calculated (and the matrix has not changed),
+#           then the cachesolve should retrieve the inverse from the cache.
+# x parameter: object generated from makeCacheMatrix(...)function
+# Return: inverse of the original matrix input to makeCacheMatrix(...)
+
+
+cacheSolve <- function(x, ...) {
+  
+  inverse = x$getinverse()
+  
+  # if the inverse has already been calculated
+  if (!is.null(inverse)){
+    # get it from the cache and skip the calculation
+    message("getting cached data")
+    return(inverse)
+  }
+  
+  # calculates the inverse if not calculated
+  data = x$get()
+  inverse = solve(data, ...)
+
+  x$setinverse(inverse)
+  
+  return(inverse)
+}
+#
+# # Sample test:
+# > x =  matrix(1:4,2,2)
+# > x
+# [,1] [,2]
+# [1,]    1    3
+# [2,]    2    4
+# > m = makeCacheMatrix(x)
+# > m
+# $set
+# function (y) 
+# {
+#   x <<- y
+#   m <<- NULL
+# }
+# <bytecode: 0x000000001bb84978>
+#   <environment: 0x000000001dd11160>
+#   
+#   $get
+# function () 
+#   x
+# <bytecode: 0x000000001badd8c8>
+#   <environment: 0x000000001dd11160>
+#   
+#   $setinverse
+# function (inverse) 
+#   m <<- inverse
+# <bytecode: 0x000000001ba70ce0>
+#   <environment: 0x000000001dd11160>
+#   
+#   $getinverse
+# function () 
+#   m
+# <bytecode: 0x000000001ba21a10>
+#   <environment: 0x000000001dd11160>
+#  
+# 
+# > m$get()
+# [,1] [,2]
+# [1,]    1    3
+# [2,]    2    4
+
+# > cacheSolve((m))
+# [,1] [,2]    #first time
+# [1,]   -2  1.5
+# [2,]    1 -0.5
+# > cacheSolve((m))
+# getting cached data  #second run, no calculating
+# [,1] [,2]
+# [1,]   -2  1.5
+# [2,]    1 -0.5
